@@ -1,4 +1,4 @@
-package com.portofolio.tracker;
+package com.portfolio.tracker;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
