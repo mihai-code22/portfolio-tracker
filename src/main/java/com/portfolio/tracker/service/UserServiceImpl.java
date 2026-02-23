@@ -1,13 +1,13 @@
 package com.portfolio.tracker.service;
 
-import com.portfolio.tracker.dto.UserMapper;
-import com.portfolio.tracker.dto.UserRequestDTO;
-import com.portfolio.tracker.dto.UserResponseDTO;
+import com.portfolio.tracker.dto.user.UserMapper;
+import com.portfolio.tracker.dto.user.UserRequestDTO;
+import com.portfolio.tracker.dto.user.UserResponseDTO;
 import com.portfolio.tracker.entity.User;
 import com.portfolio.tracker.exception.DuplicateResourceException;
 import com.portfolio.tracker.exception.ResourceNotFoundException;
 import com.portfolio.tracker.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

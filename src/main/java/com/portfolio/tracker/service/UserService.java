@@ -1,7 +1,7 @@
 package com.portfolio.tracker.service;
 
-import com.portfolio.tracker.dto.UserRequestDTO;
-import com.portfolio.tracker.dto.UserResponseDTO;
+import com.portfolio.tracker.dto.user.UserRequestDTO;
+import com.portfolio.tracker.dto.user.UserResponseDTO;
 
 public interface UserService {
 

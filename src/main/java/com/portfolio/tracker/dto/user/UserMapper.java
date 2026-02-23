@@ -1,4 +1,4 @@
-package com.portfolio.tracker.dto;
+package com.portfolio.tracker.dto.user;
 
 import com.portfolio.tracker.entity.User;
 import org.springframework.stereotype.Component;

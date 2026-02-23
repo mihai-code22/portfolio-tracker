@@ -1,7 +1,7 @@
 package com.portfolio.tracker.controller;
 
-import com.portfolio.tracker.dto.UserRequestDTO;
-import com.portfolio.tracker.dto.UserResponseDTO;
+import com.portfolio.tracker.dto.user.UserRequestDTO;
+import com.portfolio.tracker.dto.user.UserResponseDTO;
 import com.portfolio.tracker.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

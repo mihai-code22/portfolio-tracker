@@ -1,4 +1,4 @@
-package com.portfolio.tracker.dto;
+package com.portfolio.tracker.dto.user;
 
 public record UserRequestDTO(
         String username,

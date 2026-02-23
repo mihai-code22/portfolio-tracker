@@ -1,16 +1,17 @@
 package com.portfolio.tracker.service;
 
-import com.portfolio.tracker.entity.Portfolio;
+import com.portfolio.tracker.dto.portfolio.PortfolioRequestDTO;
+import com.portfolio.tracker.dto.portfolio.PortfolioResponseDTO;
 
 import java.util.List;
 
 public interface PortfolioService {
 
-    Portfolio create(Portfolio portfolio, Long userId);
+    PortfolioResponseDTO create(PortfolioRequestDTO portfolioRequestDTO, Long userId);
 
-    Portfolio findById(Long id);
+    PortfolioResponseDTO findById(Long id);
 
-    List<Portfolio> findByUserId(Long userId);
+    List<PortfolioResponseDTO> findByUserId(Long userId);
 
     void delete(Long id);
 }

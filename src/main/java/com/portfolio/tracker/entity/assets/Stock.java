@@ -17,7 +17,6 @@ import lombok.experimental.SuperBuilder;
 public class Stock extends Asset {
 
     @NotBlank
-    @Column(nullable = false)
     private String exchange;
 
     @Enumerated(value = EnumType.STRING)

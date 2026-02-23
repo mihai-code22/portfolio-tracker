@@ -18,6 +18,5 @@ import lombok.experimental.SuperBuilder;
 public class Crypto extends Asset {
 
     @NotBlank
-    @Column(nullable = false)
     private String blockchain;
 }

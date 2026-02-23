@@ -28,6 +28,6 @@ public class Bond extends Asset {
     @Column(name = "coupon_rate", updatable = false)
     private Float couponRate;
 
-    @Column(name = "maturity_date", nullable = false, updatable = false)
+    @Column(name = "maturity_date", updatable = false)
     private LocalDate  maturityDate;
 }
