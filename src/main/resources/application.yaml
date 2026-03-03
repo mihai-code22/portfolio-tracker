@@ -28,5 +28,9 @@ spring:
       name: admin
       password: admin123
 
+jwt:
+  secret: "K7gNU3sdo+OL0wNhqoVWhr3g6s1xYv72ol/pe/Unols="
+  expiration: 86400000 // 1 day
+
 server:
   port: 8080
