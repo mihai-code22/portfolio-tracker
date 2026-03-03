@@ -8,11 +8,11 @@ import com.portfolio.tracker.entity.User;
 import com.portfolio.tracker.exception.ResourceNotFoundException;
 import com.portfolio.tracker.repository.PortfolioRepository;
 import com.portfolio.tracker.repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
 
