@@ -4,6 +4,7 @@ import com.portfolio.tracker.dto.login.LoginRequestDTO;
 import com.portfolio.tracker.dto.login.LoginResponseDTO;
 import com.portfolio.tracker.dto.user.UserRequestDTO;
 import com.portfolio.tracker.service.LoginService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +23,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<LoginResponseDTO> register(@RequestBody UserRequestDTO dto) {
+    public ResponseEntity<LoginResponseDTO> register(@RequestBody @Valid UserRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(loginService.register(dto));
     }
 

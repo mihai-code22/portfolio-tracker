@@ -3,6 +3,7 @@ package com.portfolio.tracker.controller;
 import com.portfolio.tracker.dto.asset.request.AssetRequestDTO;
 import com.portfolio.tracker.dto.asset.response.AssetResponseDTO;
 import com.portfolio.tracker.service.AssetService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class AssetController {
     }
 
     @PostMapping("/portfolio/{portfolioId}")
-    public ResponseEntity<AssetResponseDTO> create(@RequestBody AssetRequestDTO assetRequestDTO,
+    public ResponseEntity<AssetResponseDTO> create(@RequestBody @Valid AssetRequestDTO assetRequestDTO,
                                                    @PathVariable Long portfolioId) {
         AssetResponseDTO assetResponseDTO = assetService.create(assetRequestDTO, portfolioId);
         return ResponseEntity.status(HttpStatus.CREATED)

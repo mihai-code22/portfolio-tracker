@@ -12,7 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -48,9 +50,16 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public List<PortfolioResponseDTO> findByUserId(Long userId) {
-        if (userRepository.findById(userId).isEmpty()) {
+    public List<PortfolioResponseDTO> findByUserId(Long userId, String username) throws AccessDeniedException {
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isEmpty()) {
             throw new ResourceNotFoundException("User not found");
+        }
+
+        String portfolioUser = userOptional.get().getUsername();
+        if (!username.equals(portfolioUser)) {
+            throw new AccessDeniedException("Unable to delete other user's portfolio.");
         }
 
         return portfolioRepository.findByUserId(userId).stream()
@@ -60,9 +69,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long id, String username) throws AccessDeniedException {
         Portfolio portfolio = portfolioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found"));
+
+        String portfolioUser = portfolio.getUser().getUsername();
+        if (!username.equals(portfolioUser)) {
+            throw new AccessDeniedException("Unable to delete other user's portfolio.");
+        }
 
         portfolioRepository.delete(portfolio);
         log.info("Deleted portfolio with id {}", id);

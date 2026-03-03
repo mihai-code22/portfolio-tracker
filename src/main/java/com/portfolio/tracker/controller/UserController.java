@@ -3,6 +3,7 @@ package com.portfolio.tracker.controller;
 import com.portfolio.tracker.dto.user.UserRequestDTO;
 import com.portfolio.tracker.dto.user.UserResponseDTO;
 import com.portfolio.tracker.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserResponseDTO> create(@RequestBody UserRequestDTO userRequestDTO) {
+    public ResponseEntity<UserResponseDTO> create(@RequestBody @Valid UserRequestDTO userRequestDTO) {
         UserResponseDTO userDTO = userService.create(userRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userDTO);

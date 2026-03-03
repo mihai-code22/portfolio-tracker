@@ -3,10 +3,13 @@ package com.portfolio.tracker.controller;
 import com.portfolio.tracker.dto.portfolio.PortfolioRequestDTO;
 import com.portfolio.tracker.dto.portfolio.PortfolioResponseDTO;
 import com.portfolio.tracker.service.PortfolioService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -34,14 +37,15 @@ public class PortfolioController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<PortfolioResponseDTO>> getPortfoliosByUserId(@PathVariable Long userId) {
-        List<PortfolioResponseDTO> portfolios = portfolioService.findByUserId(userId);
+    public ResponseEntity<List<PortfolioResponseDTO>> getPortfoliosByUserId(@PathVariable Long userId,
+                                                                            @AuthenticationPrincipal String username) throws AccessDeniedException {
+        List<PortfolioResponseDTO> portfolios = portfolioService.findByUserId(userId, username);
         return ResponseEntity.ok(portfolios);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        portfolioService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal String username) throws AccessDeniedException {
+        portfolioService.delete(id, username);
         return ResponseEntity.noContent().build();
     }
 }
