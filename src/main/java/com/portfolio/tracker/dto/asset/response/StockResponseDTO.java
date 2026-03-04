@@ -9,5 +9,6 @@ public record StockResponseDTO(
         Float buyPrice,
         Long portfolioId,
         String exchange,
-        Sector sector
+        Sector sector,
+        String type
 ) implements AssetResponseDTO {}

@@ -66,12 +66,12 @@ class AssetServiceImplTest {
                 .quantity(5.0f)
                 .buyPrice(150.0f)
                 .exchange("NASDAQ")
-                .sector(Sector.TECHNOLOGY)
+                .sector(Sector.INFORMATION_TECHNOLOGY)
                 .portfolio(portfolio)
                 .build();
 
-        stockRequestDTO = new StockRequestDTO("AAPL", 5.0f, 150.0f, "NASDAQ", Sector.TECHNOLOGY);
-        stockResponseDTO = new StockResponseDTO(100L, "AAPL", 5.0f, 150.0f, 10L, "NASDAQ", Sector.TECHNOLOGY);
+        stockRequestDTO = new StockRequestDTO("AAPL", 5.0f, 150.0f, "NASDAQ", Sector.INFORMATION_TECHNOLOGY);
+        stockResponseDTO = new StockResponseDTO(100L, "AAPL", 5.0f, 150.0f, 10L, "NASDAQ", Sector.INFORMATION_TECHNOLOGY, "STOCK");
     }
 
     @Test

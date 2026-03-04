@@ -7,9 +7,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum AssetType {
 
-    STOCK("Stock"),
-    BOND("Bond"),
-    CRYPTO("Crypto");
+    STOCK("STOCK"),
+    BOND("BOND"),
+    CRYPTO("CRYPTO");
 
     private final String type;
 }

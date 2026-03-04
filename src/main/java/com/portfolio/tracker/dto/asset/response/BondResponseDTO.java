@@ -9,5 +9,6 @@ public record BondResponseDTO(
         Float buyPrice,
         Long portfolioId,
         Float couponRate,
-        LocalDate maturityDate
+        LocalDate maturityDate,
+        String type
 ) implements AssetResponseDTO {}

@@ -17,7 +17,6 @@ public enum Sector {
     INFORMATION_TECHNOLOGY("Information Technology"),
     COMMUNICATION_SERVICES("Communication Services"),
     UTILITIES("Utilities"),
-    TECHNOLOGY("Technology"),
     REAL_ESTATE("Real Estate");
 
     private final String label;

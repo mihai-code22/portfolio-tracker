@@ -30,6 +30,14 @@ public class PortfolioController {
                 .body(portfolioResponseDTO);
     }
 
+    @PostMapping("/me")
+    public ResponseEntity<PortfolioResponseDTO> createMyPortfolio(
+            @RequestBody PortfolioRequestDTO portfolioRequestDTO,
+            @AuthenticationPrincipal String username) {
+        PortfolioResponseDTO portfolioResponseDTO = portfolioService.createForUsername(portfolioRequestDTO, username);
+        return ResponseEntity.status(HttpStatus.CREATED).body(portfolioResponseDTO);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<PortfolioResponseDTO> getPortfolio(@PathVariable Long id) {
         PortfolioResponseDTO portfolioResponseDTO = portfolioService.findById(id);
@@ -41,6 +49,12 @@ public class PortfolioController {
                                                                             @AuthenticationPrincipal String username) throws AccessDeniedException {
         List<PortfolioResponseDTO> portfolios = portfolioService.findByUserId(userId, username);
         return ResponseEntity.ok(portfolios);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<List<PortfolioResponseDTO>> getMyPortfolios(
+            @AuthenticationPrincipal String username) {
+        return ResponseEntity.ok(portfolioService.findByUsername(username));
     }
 
     @DeleteMapping("/{id}")

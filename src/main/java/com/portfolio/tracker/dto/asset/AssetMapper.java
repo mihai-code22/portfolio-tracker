@@ -12,6 +12,7 @@ import com.portfolio.tracker.entity.Asset;
 import com.portfolio.tracker.entity.assets.Bond;
 import com.portfolio.tracker.entity.assets.Crypto;
 import com.portfolio.tracker.entity.assets.Stock;
+import com.portfolio.tracker.enums.AssetType;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -51,7 +52,8 @@ public class AssetMapper {
                     s.getBuyPrice(),
                     s.getPortfolio().getId(),
                     s.getExchange(),
-                    s.getSector()
+                    s.getSector(),
+                    AssetType.STOCK.getType()
             );
             case Crypto c -> new CryptoResponseDTO(
                     c.getId(),
@@ -59,7 +61,8 @@ public class AssetMapper {
                     c.getQuantity(),
                     c.getBuyPrice(),
                     c.getPortfolio().getId(),
-                    c.getBlockchain()
+                    c.getBlockchain(),
+                    AssetType.CRYPTO.getType()
             );
             case Bond b -> new BondResponseDTO(
                     b.getId(),
@@ -68,7 +71,8 @@ public class AssetMapper {
                     b.getBuyPrice(),
                     b.getPortfolio().getId(),
                     b.getCouponRate(),
-                    b.getMaturityDate()
+                    b.getMaturityDate(),
+                    AssetType.BOND.getType()
             );
             default -> throw new IllegalArgumentException("Unknown asset type: " + asset.getClass().getSimpleName());
         };

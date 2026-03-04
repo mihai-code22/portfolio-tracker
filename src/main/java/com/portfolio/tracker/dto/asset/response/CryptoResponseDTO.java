@@ -6,5 +6,6 @@ public record CryptoResponseDTO(
         Float quantity,
         Float buyPrice,
         Long portfolioId,
-        String blockchain
+        String blockchain,
+        String type
 ) implements AssetResponseDTO {}

@@ -43,6 +43,15 @@ public class PortfolioServiceImpl implements PortfolioService {
         return portfolioMapper.toDto(savedPortfolio);
     }
 
+    public PortfolioResponseDTO createForUsername(PortfolioRequestDTO dto, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Portfolio portfolio = portfolioMapper.toEntity(dto);
+        portfolio.setUser(user);
+        Portfolio saved = portfolioRepository.save(portfolio);
+        return portfolioMapper.toDto(saved);
+    }
+
     @Override
     public PortfolioResponseDTO findById(Long id) {
         return portfolioRepository.findById(id).map(portfolioMapper::toDto)
@@ -63,6 +72,13 @@ public class PortfolioServiceImpl implements PortfolioService {
         }
 
         return portfolioRepository.findByUserId(userId).stream()
+                .map(portfolioMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public List<PortfolioResponseDTO> findByUsername(String username) {
+        return portfolioRepository.findByUserUsername(username).stream()
                 .map(portfolioMapper::toDto)
                 .toList();
     }
