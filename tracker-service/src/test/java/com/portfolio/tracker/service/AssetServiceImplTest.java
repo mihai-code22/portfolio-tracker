@@ -11,7 +11,7 @@ import com.portfolio.tracker.enums.Sector;
 import com.portfolio.tracker.exception.ResourceNotFoundException;
 import com.portfolio.tracker.repository.postgres.AssetRepository;
 import com.portfolio.tracker.repository.postgres.PortfolioRepository;
-import com.portfolio.tracker.service.portfolio.AssetServiceImpl;
+import com.portfolio.tracker.service.asset.AssetServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

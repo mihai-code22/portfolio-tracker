@@ -1,4 +1,4 @@
-package com.portfolio.tracker.service.portfolio;
+package com.portfolio.tracker.service.asset;
 
 import com.portfolio.tracker.dto.asset.request.AssetRequestDTO;
 import com.portfolio.tracker.dto.asset.response.AssetResponseDTO;

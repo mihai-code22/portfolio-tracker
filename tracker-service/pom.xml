@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.portfolio</groupId>
-	<artifactId>tracker</artifactId>
+	<artifactId>tracker-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>tracker</name>
 	<description>Application for managing investment portfolios</description>
