@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: price-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/portfolio
+    username: admin
+    password: admin123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/portfolio-tracker
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+server:
+  port: 8081
