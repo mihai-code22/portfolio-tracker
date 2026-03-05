@@ -1,10 +1,10 @@
-package com.portfolio.tracker.service;
+package com.portfolio.tracker.service.user;
 
 import com.portfolio.tracker.dto.login.LoginRequestDTO;
 import com.portfolio.tracker.dto.login.LoginResponseDTO;
 import com.portfolio.tracker.dto.user.UserRequestDTO;
 import com.portfolio.tracker.dto.user.UserResponseDTO;
-import com.portfolio.tracker.entity.User;
+import com.portfolio.tracker.entity.postgres.User;
 import com.portfolio.tracker.security.JwtUtil;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;

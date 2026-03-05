@@ -8,10 +8,10 @@ import com.portfolio.tracker.dto.asset.response.AssetResponseDTO;
 import com.portfolio.tracker.dto.asset.response.BondResponseDTO;
 import com.portfolio.tracker.dto.asset.response.CryptoResponseDTO;
 import com.portfolio.tracker.dto.asset.response.StockResponseDTO;
-import com.portfolio.tracker.entity.Asset;
-import com.portfolio.tracker.entity.assets.Bond;
-import com.portfolio.tracker.entity.assets.Crypto;
-import com.portfolio.tracker.entity.assets.Stock;
+import com.portfolio.tracker.entity.postgres.Asset;
+import com.portfolio.tracker.entity.postgres.assets.Bond;
+import com.portfolio.tracker.entity.postgres.assets.Crypto;
+import com.portfolio.tracker.entity.postgres.assets.Stock;
 import com.portfolio.tracker.enums.AssetType;
 import org.springframework.stereotype.Component;
 

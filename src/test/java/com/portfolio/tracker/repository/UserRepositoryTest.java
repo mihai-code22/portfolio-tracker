@@ -1,6 +1,7 @@
 package com.portfolio.tracker.repository;
 
-import com.portfolio.tracker.entity.User;
+import com.portfolio.tracker.entity.postgres.User;
+import com.portfolio.tracker.repository.postgres.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

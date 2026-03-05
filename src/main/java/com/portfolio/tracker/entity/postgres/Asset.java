@@ -1,5 +1,6 @@
-package com.portfolio.tracker.entity;
+package com.portfolio.tracker.entity.postgres;
 
+import com.portfolio.tracker.enums.AssetType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +18,7 @@ import lombok.experimental.SuperBuilder;
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 @ToString(exclude = "portfolio")
 @EqualsAndHashCode(exclude = "portfolio")
-public class Asset {
+public abstract class Asset {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,4 +39,6 @@ public class Asset {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "portfolio_id", nullable = false)
     private Portfolio portfolio;
+
+    public abstract AssetType getAssetType();
 }

@@ -6,7 +6,7 @@ import com.portfolio.tracker.dto.user.UserResponseDTO;
 import com.portfolio.tracker.exception.DuplicateResourceException;
 import com.portfolio.tracker.exception.ResourceNotFoundException;
 import com.portfolio.tracker.security.JwtUtil;
-import com.portfolio.tracker.service.UserService;
+import com.portfolio.tracker.service.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

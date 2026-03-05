@@ -1,6 +1,6 @@
 package com.portfolio.tracker.dto.portfolio;
 
-import com.portfolio.tracker.entity.Portfolio;
+import com.portfolio.tracker.entity.postgres.Portfolio;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -1,6 +1,6 @@
-package com.portfolio.tracker.repository;
+package com.portfolio.tracker.repository.postgres;
 
-import com.portfolio.tracker.entity.Portfolio;
+import com.portfolio.tracker.entity.postgres.Portfolio;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

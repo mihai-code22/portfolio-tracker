@@ -1,7 +1,7 @@
-package com.portfolio.tracker.entity.assets;
+package com.portfolio.tracker.entity.postgres.assets;
 
-import com.portfolio.tracker.entity.Asset;
-import jakarta.persistence.Column;
+import com.portfolio.tracker.entity.postgres.Asset;
+import com.portfolio.tracker.enums.AssetType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotBlank;
@@ -19,4 +19,9 @@ public class Crypto extends Asset {
 
     @NotBlank
     private String blockchain;
+
+    @Override
+    public AssetType getAssetType() {
+        return AssetType.CRYPTO;
+    }
 }

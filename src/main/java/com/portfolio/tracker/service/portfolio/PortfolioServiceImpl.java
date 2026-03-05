@@ -1,13 +1,13 @@
-package com.portfolio.tracker.service;
+package com.portfolio.tracker.service.portfolio;
 
 import com.portfolio.tracker.dto.portfolio.PortfolioMapper;
 import com.portfolio.tracker.dto.portfolio.PortfolioRequestDTO;
 import com.portfolio.tracker.dto.portfolio.PortfolioResponseDTO;
-import com.portfolio.tracker.entity.Portfolio;
-import com.portfolio.tracker.entity.User;
+import com.portfolio.tracker.entity.postgres.Portfolio;
+import com.portfolio.tracker.entity.postgres.User;
 import com.portfolio.tracker.exception.ResourceNotFoundException;
-import com.portfolio.tracker.repository.PortfolioRepository;
-import com.portfolio.tracker.repository.UserRepository;
+import com.portfolio.tracker.repository.postgres.PortfolioRepository;
+import com.portfolio.tracker.repository.postgres.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;

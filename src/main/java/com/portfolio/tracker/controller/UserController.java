@@ -2,7 +2,7 @@ package com.portfolio.tracker.controller;
 
 import com.portfolio.tracker.dto.user.UserRequestDTO;
 import com.portfolio.tracker.dto.user.UserResponseDTO;
-import com.portfolio.tracker.service.UserService;
+import com.portfolio.tracker.service.user.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,7 @@
-package com.portfolio.tracker.entity.assets;
+package com.portfolio.tracker.entity.postgres.assets;
 
-import com.portfolio.tracker.entity.Asset;
+import com.portfolio.tracker.entity.postgres.Asset;
+import com.portfolio.tracker.enums.AssetType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -30,4 +31,9 @@ public class Bond extends Asset {
 
     @Column(name = "maturity_date", updatable = false)
     private LocalDate  maturityDate;
+
+    @Override
+    public AssetType getAssetType() {
+        return AssetType.BOND;
+    }
 }

@@ -1,8 +1,8 @@
-package com.portfolio.tracker.service;
+package com.portfolio.tracker.service.user;
 
 import com.portfolio.tracker.dto.user.UserRequestDTO;
 import com.portfolio.tracker.dto.user.UserResponseDTO;
-import com.portfolio.tracker.entity.User;
+import com.portfolio.tracker.entity.postgres.User;
 
 public interface UserService {
 

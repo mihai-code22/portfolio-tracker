@@ -1,4 +1,4 @@
-package com.portfolio.tracker.entity;
+package com.portfolio.tracker.entity.postgres;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

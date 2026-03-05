@@ -1,6 +1,7 @@
-package com.portfolio.tracker.entity.assets;
+package com.portfolio.tracker.entity.postgres.assets;
 
-import com.portfolio.tracker.entity.Asset;
+import com.portfolio.tracker.entity.postgres.Asset;
+import com.portfolio.tracker.enums.AssetType;
 import com.portfolio.tracker.enums.Sector;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -21,4 +22,9 @@ public class Stock extends Asset {
 
     @Enumerated(value = EnumType.STRING)
     private Sector sector;
+
+    @Override
+    public AssetType getAssetType() {
+        return AssetType.STOCK;
+    }
 }
