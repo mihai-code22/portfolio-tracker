@@ -1,7 +1,7 @@
 package com.portfolio.tracker.entity.postgres.assets;
 
 import com.portfolio.tracker.entity.postgres.Asset;
-import com.portfolio.tracker.enums.AssetType;
+import com.portfolio.common.enums.AssetType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;

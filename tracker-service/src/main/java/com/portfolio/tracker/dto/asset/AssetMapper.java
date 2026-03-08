@@ -12,7 +12,7 @@ import com.portfolio.tracker.entity.postgres.Asset;
 import com.portfolio.tracker.entity.postgres.assets.Bond;
 import com.portfolio.tracker.entity.postgres.assets.Crypto;
 import com.portfolio.tracker.entity.postgres.assets.Stock;
-import com.portfolio.tracker.enums.AssetType;
+import com.portfolio.common.enums.AssetType;
 import org.springframework.stereotype.Component;
 
 @Component

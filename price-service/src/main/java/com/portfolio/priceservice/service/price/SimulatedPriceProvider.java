@@ -1,6 +1,6 @@
 package com.portfolio.priceservice.service.price;
 
-import com.portfolio.priceservice.enums.AssetType;
+import com.portfolio.common.enums.AssetType;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;

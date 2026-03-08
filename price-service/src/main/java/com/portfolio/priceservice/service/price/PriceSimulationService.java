@@ -2,8 +2,8 @@ package com.portfolio.priceservice.service.price;
 
 import com.portfolio.priceservice.entity.mongo.PriceHistory;
 import com.portfolio.priceservice.entity.postgres.Asset;
-import com.portfolio.priceservice.enums.AssetType;
-import com.portfolio.priceservice.event.PriceUpdateEvent;
+import com.portfolio.common.enums.AssetType;
+import com.portfolio.common.event.PriceUpdateEvent;
 import com.portfolio.priceservice.repository.mongo.PriceHistoryRepository;
 import com.portfolio.priceservice.repository.postgres.AssetRepository;
 import com.portfolio.priceservice.service.kafka.PriceEventPublisher;

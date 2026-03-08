@@ -1,6 +1,6 @@
 package com.portfolio.priceservice.entity.postgres;
 
-import com.portfolio.priceservice.enums.AssetType;
+import com.portfolio.common.enums.AssetType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -1,4 +1,4 @@
-package com.portfolio.tracker.event;
+package com.portfolio.common.event;
 
 import java.time.LocalDateTime;
 

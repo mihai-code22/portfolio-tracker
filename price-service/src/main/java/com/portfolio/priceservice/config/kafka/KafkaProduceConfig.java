@@ -1,6 +1,6 @@
 package com.portfolio.priceservice.config.kafka;
 
-import com.portfolio.priceservice.event.PriceUpdateEvent;
+import com.portfolio.common.event.PriceUpdateEvent;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;

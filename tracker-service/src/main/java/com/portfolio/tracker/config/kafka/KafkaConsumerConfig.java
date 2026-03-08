@@ -1,6 +1,6 @@
 package com.portfolio.tracker.config.kafka;
 
-import com.portfolio.tracker.event.PriceUpdateEvent;
+import com.portfolio.common.event.PriceUpdateEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +33,7 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.portfolio.tracker.event.PriceUpdateEvent");
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.portfolio.common.event.PriceUpdateEvent");
         return new DefaultKafkaConsumerFactory<>(config);
     }
 

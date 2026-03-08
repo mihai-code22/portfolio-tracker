@@ -3,7 +3,7 @@ package com.portfolio.tracker.service.price;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
-import com.portfolio.tracker.event.PriceUpdateEvent;
+import com.portfolio.common.event.PriceUpdateEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
