@@ -1,40 +1,30 @@
 package com.portfolio.tracker.service.price;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.stats.CacheStats;
 import com.portfolio.common.event.PriceUpdateEvent;
+import com.portfolio.tracker.service.pnl.PnlBroadcastService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.TimeUnit;
-
 @Service
 @Slf4j
-public class PriceUpdateConsumer implements PriceService {
+public class PriceUpdateConsumer {
 
-    private final Cache<String, Float> currentPrices = Caffeine.newBuilder()
-            .expireAfterWrite(30, TimeUnit.SECONDS)
-            .maximumSize(1000)
-            .recordStats()
-            .build();
+    private final PriceCache priceCache;
+    private final PnlBroadcastService pnlBroadcastService;
+
+    public PriceUpdateConsumer(PriceCache priceCache, PnlBroadcastService pnlBroadcastService) {
+        this.priceCache = priceCache;
+        this.pnlBroadcastService = pnlBroadcastService;
+    }
 
     @KafkaListener(
             topics = "${kafka.topics.price-updates.name}",
             groupId = "${kafka.consumer.group-id}"
     )
     public void consume(PriceUpdateEvent event) {
-        log.debug("Received price update for {}: {}", event.symbol(), event.price());
-        currentPrices.put(event.symbol(), event.price());
-    }
-
-    @Override
-    public Float getCurrentPrice(String symbol) {
-        return currentPrices.getIfPresent(symbol);
-    }
-
-    public CacheStats getStats() {
-        return currentPrices.stats();
+        log.debug("Received price update: {} → {}", event.symbol(), event.price());
+        priceCache.update(event.symbol(), event.price());
+        pnlBroadcastService.broadcastForSymbol(event.symbol(), event.price());
     }
 }

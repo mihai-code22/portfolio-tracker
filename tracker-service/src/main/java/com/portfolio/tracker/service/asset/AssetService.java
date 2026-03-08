@@ -3,6 +3,7 @@ package com.portfolio.tracker.service.asset;
 import com.portfolio.tracker.dto.asset.pnl.AssetPnlDTO;
 import com.portfolio.tracker.dto.asset.request.AssetRequestDTO;
 import com.portfolio.tracker.dto.asset.response.AssetResponseDTO;
+import com.portfolio.tracker.entity.postgres.Asset;
 
 import java.util.List;
 

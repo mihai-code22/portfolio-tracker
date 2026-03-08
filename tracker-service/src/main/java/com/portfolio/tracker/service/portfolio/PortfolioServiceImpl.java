@@ -11,7 +11,7 @@ import com.portfolio.tracker.repository.postgres.AssetRepository;
 import com.portfolio.tracker.repository.postgres.PortfolioRepository;
 import com.portfolio.tracker.repository.postgres.UserRepository;
 import com.portfolio.tracker.service.pnl.PnlCalculator;
-import com.portfolio.tracker.service.price.PriceService;
+import com.portfolio.tracker.service.price.PriceCache;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -28,17 +28,17 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final UserRepository userRepository;
     private final PortfolioMapper portfolioMapper;
     private final AssetRepository assetRepository;
-    private final PriceService priceService;
+    private final PriceCache priceCache;
     private final PnlCalculator pnlCalculator;
 
     public PortfolioServiceImpl(PortfolioRepository portfolioRepository, UserRepository userRepository,
                                 PortfolioMapper portfolioMapper, AssetRepository assetRepository,
-                                PriceService priceService, PnlCalculator pnlCalculator) {
+                                PriceCache priceCache, PnlCalculator pnlCalculator) {
         this.portfolioRepository = portfolioRepository;
         this.userRepository = userRepository;
         this.portfolioMapper = portfolioMapper;
         this.assetRepository = assetRepository;
-        this.priceService = priceService;
+        this.priceCache = priceCache;
         this.pnlCalculator = pnlCalculator;
     }
 
@@ -100,7 +100,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         return portfolioRepository.findByUserUsername(username).stream()
                 .map(portfolio -> {
                     var assetPnls = assetRepository.findByPortfolioId(portfolio.getId()).stream()
-                            .map(asset -> pnlCalculator.forAsset(asset, priceService.getCurrentPrice(asset.getSymbol())))
+                            .map(asset -> pnlCalculator.forAsset(asset, priceCache.getCurrentPrice(asset.getSymbol())))
                             .toList();
                     return pnlCalculator.forPortfolio(portfolio, assetPnls);
                 })

@@ -10,7 +10,7 @@ import com.portfolio.tracker.exception.ResourceNotFoundException;
 import com.portfolio.tracker.repository.postgres.AssetRepository;
 import com.portfolio.tracker.repository.postgres.PortfolioRepository;
 import com.portfolio.tracker.service.pnl.PnlCalculator;
-import com.portfolio.tracker.service.price.PriceService;
+import com.portfolio.tracker.service.price.PriceCache;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,15 +24,15 @@ public class AssetServiceImpl implements AssetService {
     private final AssetRepository assetRepository;
     private final PortfolioRepository portfolioRepository;
     private final AssetMapper assetMapper;
-    private final PriceService priceService;
+    private final PriceCache priceCache;
     private final PnlCalculator pnlCalculator;
 
     public AssetServiceImpl(AssetRepository assetRepository, PortfolioRepository portfolioRepository,
-                            AssetMapper assetMapper, PriceService priceService, PnlCalculator pnlCalculator) {
+                            AssetMapper assetMapper, PriceCache priceCache, PnlCalculator pnlCalculator) {
         this.assetRepository = assetRepository;
         this.portfolioRepository = portfolioRepository;
         this.assetMapper = assetMapper;
-        this.priceService = priceService;
+        this.priceCache = priceCache;
         this.pnlCalculator = pnlCalculator;
     }
 
@@ -81,7 +81,7 @@ public class AssetServiceImpl implements AssetService {
                 .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found"));
 
         return assetRepository.findByPortfolioId(portfolioId).stream()
-                .map(asset -> pnlCalculator.forAsset(asset, priceService.getCurrentPrice(asset.getSymbol())))
+                .map(asset -> pnlCalculator.forAsset(asset, priceCache.getCurrentPrice(asset.getSymbol())))
                 .toList();
     }
 }
