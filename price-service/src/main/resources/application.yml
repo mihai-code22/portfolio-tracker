@@ -30,3 +30,10 @@ server:
 logging:
   level:
     com.portfolio.priceservice: DEBUG
+
+kafka:
+  topics:
+    price-updates:
+      name: price-updates
+      partitions: 1
+      replicas: 1

@@ -3,8 +3,10 @@ package com.portfolio.priceservice.service.price;
 import com.portfolio.priceservice.entity.mongo.PriceHistory;
 import com.portfolio.priceservice.entity.postgres.Asset;
 import com.portfolio.priceservice.enums.AssetType;
+import com.portfolio.priceservice.event.PriceUpdateEvent;
 import com.portfolio.priceservice.repository.mongo.PriceHistoryRepository;
 import com.portfolio.priceservice.repository.postgres.AssetRepository;
+import com.portfolio.priceservice.service.kafka.PriceEventPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,13 +25,15 @@ public class PriceSimulationService {
     private final AssetRepository assetRepository;
     private final PriceHistoryRepository priceHistoryRepository;
     private final PriceProvider priceProvider;
+    private final PriceEventPublisher priceEventPublisher;
 
     public PriceSimulationService(AssetRepository assetRepository,
                                   PriceHistoryRepository priceHistoryRepository,
-                                  @Qualifier("simulated") PriceProvider priceProvider) {
+                                  @Qualifier("simulated") PriceProvider priceProvider, PriceEventPublisher priceEventPublisher) {
         this.assetRepository = assetRepository;
         this.priceHistoryRepository = priceHistoryRepository;
         this.priceProvider = priceProvider;
+        this.priceEventPublisher = priceEventPublisher;
     }
 
     @Scheduled(fixedRateString = "${price.simulation.interval:10000}")
@@ -50,6 +54,11 @@ public class PriceSimulationService {
                     priceHistoryRepository.save(
                             new PriceHistory(symbol, price, LocalDateTime.now())
                     );
+
+                    priceEventPublisher.publishPriceUpdate(
+                            new PriceUpdateEvent(symbol, price, LocalDateTime.now(), assetType.name())
+                    );
+
                     log.debug("Updated price for {}: {}", symbol, price);
                 })
         );
