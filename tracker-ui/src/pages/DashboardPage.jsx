@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMyPortfolios, createPortfolio, deletePortfolio } from '../services/api';
+import { getPortfolioPnl, createPortfolio, deletePortfolio } from '../services/api';
 
 function getUserIdFromToken() {
     try {
@@ -124,9 +124,26 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        gap: '20px',
+        gap: '16px',
         transition: 'border-color 0.2s, background 0.2s, transform 0.15s',
-        minHeight: '110px',
+        minHeight: '140px',
+    },
+    pnlGrid: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '10px',
+    },
+    pnlLabel: {
+        fontSize: '11px',
+        color: 'rgba(255,255,255,0.35)',
+        fontWeight: '500',
+        letterSpacing: '0.3px',
+        marginBottom: '2px',
+    },
+    pnlValue: {
+        fontSize: '13px',
+        fontWeight: '600',
+        color: 'rgba(255,255,255,0.85)',
     },
     cardHover: {
         borderColor: 'rgba(74,158,255,0.35)',
@@ -185,6 +202,11 @@ function PortfolioCard({ portfolio, onDelete, onClick }) {
         setDeleting(false);
     };
 
+    const pnl = portfolio.pnl ?? 0;
+    const pnlPct = portfolio.pnlPercentage ?? 0;
+    const pnlColor = pnl >= 0 ? '#4ade80' : '#fc8181';
+    const hasPnlData = portfolio.totalInvested != null;
+
     return (
         <div
             style={{ ...styles.card, ...(hovered ? styles.cardHover : {}) }}
@@ -193,6 +215,32 @@ function PortfolioCard({ portfolio, onDelete, onClick }) {
             onMouseLeave={() => setHovered(false)}
         >
             <span style={styles.cardName}>{portfolio.name}</span>
+
+            {hasPnlData && (
+                <div style={styles.pnlGrid}>
+                    <div>
+                        <div style={styles.pnlLabel}>Invested</div>
+                        <div style={styles.pnlValue}>${Number(portfolio.totalInvested).toFixed(2)}</div>
+                    </div>
+                    <div>
+                        <div style={styles.pnlLabel}>Current Value</div>
+                        <div style={styles.pnlValue}>${Number(portfolio.currentValue).toFixed(2)}</div>
+                    </div>
+                    <div>
+                        <div style={styles.pnlLabel}>P&amp;L</div>
+                        <div style={{ ...styles.pnlValue, color: pnlColor }}>
+                            {pnl >= 0 ? '+' : ''}${Number(pnl).toFixed(2)}
+                        </div>
+                    </div>
+                    <div>
+                        <div style={styles.pnlLabel}>Return</div>
+                        <div style={{ ...styles.pnlValue, color: pnlColor }}>
+                            {pnlPct >= 0 ? '+' : ''}{Number(pnlPct).toFixed(2)}%
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div style={styles.cardFooter}>
                 <span style={styles.viewHint}>View details →</span>
                 <button
@@ -233,7 +281,7 @@ export default function DashboardPage() {
 
     const fetchPortfolios = async () => {
         try {
-            const res = await getMyPortfolios();
+            const res = await getPortfolioPnl();
             setPortfolios(res.data);
         } catch (err) {
             setError('Failed to load portfolios.');
@@ -250,7 +298,10 @@ export default function DashboardPage() {
         setError('');
         try {
             const res = await createPortfolio(name);
-            setPortfolios((prev) => [...prev, res.data]);
+            setPortfolios((prev) => [
+                ...prev,
+                { totalInvested: 0, currentValue: 0, pnl: 0, pnlPercentage: 0, ...res.data },
+            ]);
             setNewName('');
         } catch (err) {
             const msg = err?.response?.data?.message || err?.response?.data || err?.message;

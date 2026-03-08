@@ -26,6 +26,9 @@ export const register = (username, email, password) =>
 export const getMyPortfolios = () =>
     api.get('/portfolios/me');
 
+export const getPortfolioPnl = () =>
+    api.get('/portfolios/me/pnl');
+
 export const getPortfolioById = (portfolioId) =>
     api.get(`/portfolios/${portfolioId}`);
 
@@ -38,6 +41,9 @@ export const deletePortfolio = (portfolioId) =>
 // Assets
 export const getAssetsByPortfolioId = (portfolioId) =>
     api.get(`/assets/portfolio/${portfolioId}`);
+
+export const getAssetsPnl = (portfolioId) =>
+    api.get(`/assets/portfolio/${portfolioId}/pnl`);
 
 export const createAsset = (portfolioId, payload) =>
     api.post(`/assets/portfolio/${portfolioId}`, payload);

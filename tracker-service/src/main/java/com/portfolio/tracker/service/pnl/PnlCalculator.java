@@ -1,15 +1,20 @@
 package com.portfolio.tracker.service.pnl;
 
+import com.portfolio.tracker.dto.asset.AssetMapper;
 import com.portfolio.tracker.dto.asset.pnl.AssetPnlDTO;
 import com.portfolio.tracker.dto.portfolio.pnl.PortfolioPnlDTO;
 import com.portfolio.tracker.entity.postgres.Asset;
 import com.portfolio.tracker.entity.postgres.Portfolio;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class PnlCalculator {
+
+    private final AssetMapper assetMapper;
 
     public AssetPnlDTO forAsset(Asset asset, Float currentPrice) {
         Float pnl = null;
@@ -20,15 +25,7 @@ public class PnlCalculator {
             pnlPercentage = ((currentPrice - asset.getBuyPrice()) / asset.getBuyPrice()) * 100;
         }
 
-        return new AssetPnlDTO(
-                asset.getId(),
-                asset.getSymbol(),
-                asset.getQuantity(),
-                asset.getBuyPrice(),
-                currentPrice,
-                pnl,
-                pnlPercentage
-        );
+        return assetMapper.toPnlDto(asset, currentPrice, pnl, pnlPercentage);
     }
 
     public PortfolioPnlDTO forPortfolio(Portfolio portfolio, List<AssetPnlDTO> assetPnls) {

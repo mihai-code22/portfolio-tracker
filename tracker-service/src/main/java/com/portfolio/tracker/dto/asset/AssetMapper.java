@@ -1,5 +1,6 @@
 package com.portfolio.tracker.dto.asset;
 
+import com.portfolio.tracker.dto.asset.pnl.AssetPnlDTO;
 import com.portfolio.tracker.dto.asset.request.AssetRequestDTO;
 import com.portfolio.tracker.dto.asset.request.BondRequestDTO;
 import com.portfolio.tracker.dto.asset.request.CryptoRequestDTO;
@@ -17,6 +18,19 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AssetMapper {
+
+    public AssetPnlDTO toPnlDto(Asset asset, Float currentPrice, Float pnl, Float pnlPercentage) {
+        return new AssetPnlDTO(
+                asset.getId(),
+                asset.getSymbol(),
+                asset.getQuantity(),
+                asset.getBuyPrice(),
+                currentPrice,
+                pnl,
+                pnlPercentage,
+                asset.getAssetType()
+        );
+    }
 
     public Asset toEntity(AssetRequestDTO dto) {
         return switch (dto) {

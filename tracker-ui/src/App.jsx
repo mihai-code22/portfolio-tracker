@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import PortfolioDetailPage from './pages/PortfolioDetailPage';
+import AddAssetPage from './pages/AddAssetPage';
 
 function App() {
     const isAuthenticated = !!localStorage.getItem('token');
@@ -15,6 +16,9 @@ function App() {
                 } />
                 <Route path="/portfolio/:id" element={
                     isAuthenticated ? <PortfolioDetailPage /> : <Navigate to="/login" />
+                } />
+                <Route path="/portfolio/:id/add-asset" element={
+                    isAuthenticated ? <AddAssetPage /> : <Navigate to="/login" />
                 } />
                 <Route path="*" element={<Navigate to="/login" />} />
             </Routes>

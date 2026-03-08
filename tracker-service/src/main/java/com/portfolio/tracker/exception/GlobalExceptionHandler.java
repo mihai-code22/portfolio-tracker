@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -39,15 +41,13 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException e, HttpServletRequest request) {
-        String errors = e.getBindingResult()
-                .getFieldErrors()
+    public ResponseEntity<Map<String, List<String>>> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+        List<String> errors = e.getBindingResult()
+                .getAllErrors()
                 .stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .collect(Collectors.joining(", "));
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(errors, LocalDateTime.now(),
-                        HttpStatus.BAD_REQUEST.value(), request.getRequestURI()));
+                .map(error -> error.getDefaultMessage())
+                .collect(Collectors.toList());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("errors", errors));
     }
 
     @ExceptionHandler(AccessDeniedException.class)

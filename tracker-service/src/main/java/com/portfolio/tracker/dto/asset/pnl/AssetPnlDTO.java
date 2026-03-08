@@ -1,5 +1,7 @@
 package com.portfolio.tracker.dto.asset.pnl;
 
+import com.portfolio.common.enums.AssetType;
+
 public record AssetPnlDTO(
         Long id,
         String symbol,
@@ -7,5 +9,6 @@ public record AssetPnlDTO(
         Float buyPrice,
         Float currentPrice,
         Float pnl,
-        Float pnlPercentage
+        Float pnlPercentage,
+        AssetType type
 ) {}

@@ -1,20 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getPortfolioById, getAssetsByPortfolioId, createAsset, deleteAsset } from '../services/api';
-
-const SECTORS = [
-    'TECHNOLOGY', 'HEALTHCARE', 'FINANCE', 'ENERGY', 'CONSUMER_GOODS',
-    'INDUSTRIALS', 'UTILITIES', 'REAL_ESTATE', 'MATERIALS',
-    'COMMUNICATION_SERVICES', 'INFORMATION_TECHNOLOGY',
-];
-
-const TYPE_OPTIONS = [
-    { value: 'STOCK',  label: 'Stock'  },
-    { value: 'BOND',   label: 'Bond'   },
-    { value: 'CRYPTO', label: 'Crypto' },
-];
-
-const SECTOR_OPTIONS = SECTORS.map((s) => ({ value: s, label: s.replace(/_/g, ' ') }));
+import { getPortfolioById, getAssetsPnl, deleteAsset } from '../services/api';
+import { usePnlWebSocket } from '../hooks/usePnlWebSocket';
 
 const styles = {
     page: {
@@ -63,11 +50,30 @@ const styles = {
         margin: '0 auto',
         padding: '40px 24px',
     },
+    pageHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '28px',
+    },
     heading: {
         fontSize: '22px',
         fontWeight: '700',
-        margin: '0 0 28px 0',
+        margin: 0,
         letterSpacing: '-0.4px',
+    },
+    addBtn: {
+        padding: '10px 20px',
+        background: 'linear-gradient(135deg, #4a9eff 0%, #7b5ea7 100%)',
+        border: 'none',
+        borderRadius: '8px',
+        color: '#ffffff',
+        fontSize: '14px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'opacity 0.2s',
+        letterSpacing: '0.2px',
+        whiteSpace: 'nowrap',
     },
     error: {
         background: 'rgba(239,68,68,0.1)',
@@ -79,135 +85,104 @@ const styles = {
         marginBottom: '20px',
         lineHeight: '1.5',
     },
-    // ── Form ────────────────────────────────────────────────
-    formCard: {
-        background: 'rgba(255,255,255,0.03)',
+    // ── Summary card ─────────────────────────────────────────
+    summaryCard: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: '1px',
+        background: 'rgba(255,255,255,0.06)',
         border: '1px solid rgba(255,255,255,0.08)',
         borderRadius: '12px',
-        padding: '24px',
-        marginBottom: '28px',
+        overflow: 'hidden',
+        marginBottom: '24px',
     },
-    formTitle: {
-        fontSize: '14px',
+    summaryCell: {
+        padding: '18px 20px',
+        background: 'rgba(255,255,255,0.02)',
+    },
+    summaryLabel: {
+        fontSize: '11px',
         fontWeight: '600',
-        color: 'rgba(255,255,255,0.5)',
-        letterSpacing: '0.5px',
+        letterSpacing: '0.6px',
         textTransform: 'uppercase',
-        margin: '0 0 18px 0',
-    },
-    formGrid: {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '12px',
-    },
-    formGroup: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '6px',
-    },
-    formLabel: {
-        fontSize: '12px',
-        fontWeight: '500',
         color: 'rgba(255,255,255,0.4)',
-        letterSpacing: '0.3px',
+        marginBottom: '6px',
     },
-    formInput: {
-        padding: '10px 12px',
-        background: 'rgba(255,255,255,0.06)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: '8px',
+    summaryValue: {
+        fontSize: '20px',
+        fontWeight: '700',
+        letterSpacing: '-0.3px',
         color: '#ffffff',
-        fontSize: '14px',
-        outline: 'none',
-        boxSizing: 'border-box',
-        width: '100%',
-        transition: 'border-color 0.2s, background 0.2s',
     },
-    formInputFocus: {
-        borderColor: 'rgba(99,179,237,0.55)',
-        background: 'rgba(255,255,255,0.09)',
-    },
-    formDivider: {
-        height: '1px',
-        background: 'rgba(255,255,255,0.06)',
-        margin: '16px 0',
-    },
-    formSubmitRow: {
-        marginTop: '16px',
+    // ── Tab summary strip ────────────────────────────────────
+    tabSummary: {
         display: 'flex',
-        justifyContent: 'flex-end',
+        gap: '24px',
+        padding: '10px 18px',
+        background: 'rgba(255,255,255,0.02)',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        fontSize: '12px',
+        color: 'rgba(255,255,255,0.45)',
     },
-    submitBtn: {
-        padding: '10px 22px',
-        background: 'linear-gradient(135deg, #4a9eff 0%, #7b5ea7 100%)',
-        border: 'none',
-        borderRadius: '8px',
-        color: '#ffffff',
-        fontSize: '14px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        transition: 'opacity 0.2s',
-        letterSpacing: '0.2px',
-    },
-    // ── Custom Dropdown ──────────────────────────────────────
-    ddWrapper: {
-        position: 'relative',
-    },
-    ddTrigger: {
+    tabSummaryItem: {
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '10px 12px',
-        background: 'rgba(255,255,255,0.06)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: '8px',
-        color: '#ffffff',
-        fontSize: '14px',
-        cursor: 'pointer',
-        userSelect: 'none',
-        transition: 'border-color 0.2s, background 0.2s',
-        boxSizing: 'border-box',
+        gap: '6px',
     },
-    ddTriggerOpen: {
-        borderColor: 'rgba(99,179,237,0.55)',
-        background: 'rgba(255,255,255,0.09)',
+    tabSummaryVal: {
+        fontWeight: '600',
+        color: 'rgba(255,255,255,0.75)',
     },
-    ddChevron: {
-        fontSize: '9px',
-        color: 'rgba(255,255,255,0.35)',
-        marginLeft: '8px',
-        flexShrink: 0,
-        transition: 'transform 0.2s',
+    // ── Tabs ────────────────────────────────────────────────
+    tabBar: {
+        display: 'flex',
+        gap: '4px',
+        marginBottom: '0',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        paddingBottom: '0',
     },
-    ddMenu: {
-        position: 'absolute',
-        top: 'calc(100% + 4px)',
-        left: 0,
-        right: 0,
-        background: '#12122a',
-        border: '1px solid rgba(255,255,255,0.12)',
-        borderRadius: '8px',
-        zIndex: 200,
-        maxHeight: '220px',
-        overflowY: 'auto',
-        boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
-    },
-    ddOption: {
-        padding: '9px 12px',
-        fontSize: '14px',
-        color: 'rgba(255,255,255,0.7)',
-        cursor: 'pointer',
-    },
-    ddOptionActive: {
-        background: 'rgba(74,158,255,0.15)',
-        color: '#63b3ed',
+    tab: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '7px',
+        padding: '10px 16px',
+        fontSize: '13px',
         fontWeight: '500',
+        cursor: 'pointer',
+        border: 'none',
+        background: 'transparent',
+        color: 'rgba(255,255,255,0.4)',
+        borderBottom: '2px solid transparent',
+        marginBottom: '-1px',
+        transition: 'color 0.15s, border-color 0.15s',
+        letterSpacing: '0.2px',
+    },
+    tabActive: {
+        color: '#ffffff',
+        borderBottom: '2px solid #4a9eff',
+    },
+    tabBadge: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: '18px',
+        height: '18px',
+        padding: '0 5px',
+        background: 'rgba(255,255,255,0.1)',
+        borderRadius: '20px',
+        fontSize: '11px',
+        fontWeight: '600',
+        color: 'rgba(255,255,255,0.5)',
+    },
+    tabBadgeActive: {
+        background: 'rgba(74,158,255,0.2)',
+        color: '#63b3ed',
     },
     // ── Table ───────────────────────────────────────────────
     tableWrapper: {
         background: 'rgba(255,255,255,0.03)',
         border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: '12px',
+        borderRadius: '0 0 12px 12px',
         overflow: 'hidden',
     },
     table: {
@@ -298,227 +273,29 @@ function typeBadgeStyle(type) {
     return { ...styles.typeBadge, ...colors };
 }
 
-// ── Reusable custom dropdown ─────────────────────────────────
-function Dropdown({ value, onChange, options, placeholder = 'Select…' }) {
-    const [open, setOpen] = useState(false);
-    const ref = useRef(null);
+const TABS = [
+    { key: 'All',    label: 'All',     filter: null     },
+    { key: 'Stock',  label: 'Stocks',  filter: 'STOCK'  },
+    { key: 'Bond',   label: 'Bonds',   filter: 'BOND'   },
+    { key: 'Crypto', label: 'Crypto',  filter: 'CRYPTO' },
+];
 
-    useEffect(() => {
-        if (!open) return;
-        const handler = (e) => {
-            if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-        };
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
-    }, [open]);
-
-    const selected = options.find((o) => o.value === value);
-
-    return (
-        <div ref={ref} style={styles.ddWrapper}>
-            <div
-                style={{ ...styles.ddTrigger, ...(open ? styles.ddTriggerOpen : {}) }}
-                onClick={() => setOpen((p) => !p)}
-            >
-                <span style={{ color: selected ? '#ffffff' : 'rgba(255,255,255,0.3)' }}>
-                    {selected ? selected.label : placeholder}
-                </span>
-                <span style={{ ...styles.ddChevron, transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                    ▼
-                </span>
-            </div>
-
-            {open && (
-                <div style={styles.ddMenu}>
-                    {options.map((o) => {
-                        const active = o.value === value;
-                        return (
-                            <div
-                                key={o.value}
-                                style={{ ...styles.ddOption, ...(active ? styles.ddOptionActive : {}) }}
-                                onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                                onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent'; }}
-                                onClick={() => { onChange(o.value); setOpen(false); }}
-                            >
-                                {o.label}
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-        </div>
-    );
+// ── Helpers ────────────────────────────────────────────────────
+function calcSummary(assets) {
+    const priced = assets.filter((a) => a.currentPrice != null);
+    const totalInvested = priced.reduce((s, a) => s + a.buyPrice * a.quantity, 0);
+    const currentValue  = priced.reduce((s, a) => s + a.currentPrice * a.quantity, 0);
+    const pnl           = currentValue - totalInvested;
+    const pnlPercentage = totalInvested !== 0 ? (pnl / totalInvested) * 100 : 0;
+    return { totalInvested, currentValue, pnl, pnlPercentage };
 }
 
-// ── Form helpers ──────────────────────────────────────────────
-function FormField({ label, children }) {
-    return (
-        <div style={styles.formGroup}>
-            <label style={styles.formLabel}>{label}</label>
-            {children}
-        </div>
-    );
-}
+function fmt$(n) { return `$${Number(n).toFixed(2)}`; }
+function fmtPct(n) { return `${n >= 0 ? '+' : ''}${Number(n).toFixed(2)}%`; }
+function fmtPnl(n) { return `${n >= 0 ? '+' : ''}${fmt$(n)}`; }
+function pnlColor(n) { return n >= 0 ? '#4ade80' : '#fc8181'; }
 
-function FormInput({ value, onChange, type = 'text', placeholder, min }) {
-    const [focused, setFocused] = useState(false);
-    return (
-        <input
-            type={type}
-            value={value}
-            onChange={onChange}
-            placeholder={placeholder}
-            min={min}
-            step={type === 'number' ? 'any' : undefined}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            style={{ ...styles.formInput, ...(focused ? styles.formInputFocus : {}) }}
-        />
-    );
-}
-
-// ── Add Asset Form ────────────────────────────────────────────
-const EMPTY_FORM = {
-    symbol: '', quantity: '', buyPrice: '', type: 'STOCK',
-    exchange: '', sector: '', couponRate: '', maturityDate: '', blockchain: '',
-};
-
-const TYPE_SPECIFIC_FIELDS = ['exchange', 'sector', 'couponRate', 'maturityDate', 'blockchain'];
-
-function AddAssetForm({ portfolioId, onAssetCreated }) {
-    const [form, setForm] = useState(EMPTY_FORM);
-    const [submitting, setSubmitting] = useState(false);
-    const [formError, setFormError] = useState('');
-
-    const setInput = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
-    const setField = (field) => (value) => setForm((prev) => ({ ...prev, [field]: value }));
-    const setType  = (value) => setForm((prev) => ({
-        ...prev,
-        type: value,
-        ...Object.fromEntries(TYPE_SPECIFIC_FIELDS.map((f) => [f, ''])),
-    }));
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setFormError('');
-        setSubmitting(true);
-
-        const payload = {
-            symbol:   form.symbol.trim().toUpperCase(),
-            quantity: Number(form.quantity),
-            buyPrice: Number(form.buyPrice),
-            type:     form.type,
-        };
-        if (form.type === 'STOCK')  { payload.exchange = form.exchange.trim(); payload.sector = form.sector; }
-        if (form.type === 'BOND')   { payload.couponRate = Number(form.couponRate); payload.maturityDate = form.maturityDate; }
-        if (form.type === 'CRYPTO') { payload.blockchain = form.blockchain.trim(); }
-
-        try {
-            const res = await createAsset(portfolioId, payload);
-            onAssetCreated(res.data);
-            setForm(EMPTY_FORM);
-        } catch (err) {
-            const msg = err?.response?.data?.message || err?.response?.data || err?.message;
-            setFormError(typeof msg === 'string' ? msg : 'Failed to create asset.');
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    const canSubmit = form.symbol.trim() && form.quantity && form.buyPrice
-        && (form.type !== 'STOCK'  || (form.exchange.trim() && form.sector))
-        && (form.type !== 'BOND'   || (form.couponRate && form.maturityDate))
-        && (form.type !== 'CRYPTO' || form.blockchain.trim());
-
-    return (
-        <div style={styles.formCard}>
-            <p style={styles.formTitle}>Add Asset</p>
-
-            {formError && <div style={{ ...styles.error, marginBottom: '16px' }}>{formError}</div>}
-
-            <form onSubmit={handleSubmit} noValidate>
-                {/* Base fields */}
-                <div style={styles.formGrid}>
-                    <FormField label="Symbol">
-                        <FormInput value={form.symbol} onChange={setInput('symbol')} placeholder="e.g. AAPL" />
-                    </FormField>
-                    <FormField label="Type">
-                        <Dropdown value={form.type} onChange={setType} options={TYPE_OPTIONS} />
-                    </FormField>
-                    <FormField label="Quantity">
-                        <FormInput type="number" value={form.quantity} onChange={setInput('quantity')} placeholder="0" min="0" />
-                    </FormField>
-                    <FormField label="Buy Price ($)">
-                        <FormInput type="number" value={form.buyPrice} onChange={setInput('buyPrice')} placeholder="0.00" min="0" />
-                    </FormField>
-                </div>
-
-                {/* STOCK extras */}
-                {form.type === 'STOCK' && (
-                    <>
-                        <div style={styles.formDivider} />
-                        <div style={styles.formGrid}>
-                            <FormField label="Exchange">
-                                <FormInput value={form.exchange} onChange={setInput('exchange')} placeholder="e.g. NASDAQ" />
-                            </FormField>
-                            <FormField label="Sector">
-                                <Dropdown
-                                    value={form.sector}
-                                    onChange={setField('sector')}
-                                    options={SECTOR_OPTIONS}
-                                    placeholder="Select sector…"
-                                />
-                            </FormField>
-                        </div>
-                    </>
-                )}
-
-                {/* BOND extras */}
-                {form.type === 'BOND' && (
-                    <>
-                        <div style={styles.formDivider} />
-                        <div style={styles.formGrid}>
-                            <FormField label="Coupon Rate (%)">
-                                <FormInput type="number" value={form.couponRate} onChange={setInput('couponRate')} placeholder="0.00" min="0" />
-                            </FormField>
-                            <FormField label="Maturity Date">
-                                <FormInput type="date" value={form.maturityDate} onChange={setInput('maturityDate')} />
-                            </FormField>
-                        </div>
-                    </>
-                )}
-
-                {/* CRYPTO extras */}
-                {form.type === 'CRYPTO' && (
-                    <>
-                        <div style={styles.formDivider} />
-                        <div style={{ ...styles.formGrid, gridTemplateColumns: '1fr' }}>
-                            <FormField label="Blockchain">
-                                <FormInput value={form.blockchain} onChange={setInput('blockchain')} placeholder="e.g. Ethereum" />
-                            </FormField>
-                        </div>
-                    </>
-                )}
-
-                <div style={styles.formSubmitRow}>
-                    <button
-                        type="submit"
-                        disabled={submitting || !canSubmit}
-                        style={{
-                            ...styles.submitBtn,
-                            opacity: submitting || !canSubmit ? 0.5 : 1,
-                            cursor:  submitting || !canSubmit ? 'not-allowed' : 'pointer',
-                        }}
-                    >
-                        {submitting ? 'Adding…' : '+ Add Asset'}
-                    </button>
-                </div>
-            </form>
-        </div>
-    );
-}
-
-// ── Asset table row ───────────────────────────────────────────
+// ── Asset table row ────────────────────────────────────────────
 function AssetRow({ asset, onDelete }) {
     const [deleting, setDeleting] = useState(false);
     const [rowHovered, setRowHovered] = useState(false);
@@ -529,6 +306,8 @@ function AssetRow({ asset, onDelete }) {
         setDeleting(false);
     };
 
+    const hasPrice = asset.currentPrice != null;
+
     return (
         <tr
             onMouseEnter={() => setRowHovered(true)}
@@ -538,7 +317,16 @@ function AssetRow({ asset, onDelete }) {
             <td style={styles.td}><span style={styles.symbol}>{asset.symbol}</span></td>
             <td style={styles.td}><span style={typeBadgeStyle(asset.type)}>{asset.type}</span></td>
             <td style={styles.tdRight}>{asset.quantity}</td>
-            <td style={styles.tdRight}>${Number(asset.buyPrice).toFixed(2)}</td>
+            <td style={styles.tdRight}>{fmt$(asset.buyPrice)}</td>
+            <td style={styles.tdRight}>
+                {hasPrice ? fmt$(asset.currentPrice) : 'N/A'}
+            </td>
+            <td style={{ ...styles.tdRight, color: hasPrice ? pnlColor(asset.pnl) : 'rgba(255,255,255,0.35)' }}>
+                {hasPrice ? fmtPnl(asset.pnl) : 'N/A'}
+            </td>
+            <td style={{ ...styles.tdRight, color: hasPrice ? pnlColor(asset.pnlPercentage) : 'rgba(255,255,255,0.35)' }}>
+                {hasPrice ? fmtPct(asset.pnlPercentage) : 'N/A'}
+            </td>
             <td style={styles.tdRight}>
                 <button
                     style={{ ...styles.deleteBtn, opacity: deleting ? 0.5 : 1, cursor: deleting ? 'not-allowed' : 'pointer' }}
@@ -552,6 +340,57 @@ function AssetRow({ asset, onDelete }) {
     );
 }
 
+// ── Summary card ───────────────────────────────────────────────
+function SummaryCard({ assets }) {
+    const { totalInvested, currentValue, pnl, pnlPercentage } = calcSummary(assets);
+    const color = pnlColor(pnl);
+
+    return (
+        <div style={styles.summaryCard}>
+            <div style={styles.summaryCell}>
+                <div style={styles.summaryLabel}>Invested</div>
+                <div style={styles.summaryValue}>{fmt$(totalInvested)}</div>
+            </div>
+            <div style={styles.summaryCell}>
+                <div style={styles.summaryLabel}>Current Value</div>
+                <div style={styles.summaryValue}>{fmt$(currentValue)}</div>
+            </div>
+            <div style={styles.summaryCell}>
+                <div style={styles.summaryLabel}>P&amp;L</div>
+                <div style={{ ...styles.summaryValue, color }}>{fmtPnl(pnl)}</div>
+            </div>
+            <div style={styles.summaryCell}>
+                <div style={styles.summaryLabel}>Return</div>
+                <div style={{ ...styles.summaryValue, color }}>{fmtPct(pnlPercentage)}</div>
+            </div>
+        </div>
+    );
+}
+
+// ── Tab P&L strip (shown for Stocks / Bonds / Crypto tabs) ─────
+function TabSummaryStrip({ assets, filter }) {
+    const filtered = assets.filter((a) => a.type === filter);
+    const { totalInvested, currentValue, pnl, pnlPercentage } = calcSummary(filtered);
+    const color = pnlColor(pnl);
+
+    return (
+        <div style={styles.tabSummary}>
+            <div style={styles.tabSummaryItem}>
+                Invested: <span style={styles.tabSummaryVal}>{fmt$(totalInvested)}</span>
+            </div>
+            <div style={styles.tabSummaryItem}>
+                Value: <span style={styles.tabSummaryVal}>{fmt$(currentValue)}</span>
+            </div>
+            <div style={styles.tabSummaryItem}>
+                P&amp;L: <span style={{ ...styles.tabSummaryVal, color }}>{fmtPnl(pnl)}</span>
+            </div>
+            <div style={styles.tabSummaryItem}>
+                Return: <span style={{ ...styles.tabSummaryVal, color }}>{fmtPct(pnlPercentage)}</span>
+            </div>
+        </div>
+    );
+}
+
 // ── Page ──────────────────────────────────────────────────────
 export default function PortfolioDetailPage() {
     const { id } = useParams();
@@ -559,11 +398,12 @@ export default function PortfolioDetailPage() {
 
     const [portfolioName, setPortfolioName] = useState('');
     const [assets, setAssets] = useState([]);
+    const [activeTab, setActiveTab] = useState('All');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        Promise.all([getPortfolioById(id), getAssetsByPortfolioId(id)])
+        Promise.all([getPortfolioById(id), getAssetsPnl(id)])
             .then(([portfolioRes, assetsRes]) => {
                 setPortfolioName(portfolioRes.data.name);
                 setAssets(assetsRes.data);
@@ -571,6 +411,14 @@ export default function PortfolioDetailPage() {
             .catch(() => setError('Failed to load portfolio.'))
             .finally(() => setLoading(false));
     }, [id]);
+
+    const handlePnlUpdate = useCallback((dto) => {
+        setAssets((prev) =>
+            prev.map((a) => (a.id === dto.id ? { ...a, ...dto } : a))
+        );
+    }, []);
+
+    usePnlWebSocket(handlePnlUpdate);
 
     const handleDelete = async (assetId) => {
         setError('');
@@ -581,6 +429,16 @@ export default function PortfolioDetailPage() {
             setError('Failed to delete asset.');
         }
     };
+
+    const counts = {
+        All:    assets.length,
+        Stock:  assets.filter((a) => a.type === 'STOCK').length,
+        Bond:   assets.filter((a) => a.type === 'BOND').length,
+        Crypto: assets.filter((a) => a.type === 'CRYPTO').length,
+    };
+
+    const activeFilter = TABS.find((t) => t.key === activeTab)?.filter;
+    const visibleAssets = activeFilter ? assets.filter((a) => a.type === activeFilter) : assets;
 
     return (
         <div style={styles.page}>
@@ -597,44 +455,81 @@ export default function PortfolioDetailPage() {
             </nav>
 
             <main style={styles.main}>
-                <h2 style={styles.heading}>{portfolioName}</h2>
+                <div style={styles.pageHeader}>
+                    <h2 style={styles.heading}>{portfolioName}</h2>
+                    <button
+                        style={styles.addBtn}
+                        onClick={() => navigate(`/portfolio/${id}/add-asset`)}
+                        onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+                    >
+                        + Add Asset
+                    </button>
+                </div>
 
                 {error && <div style={styles.error}>{error}</div>}
-
-                {!loading && (
-                    <AddAssetForm
-                        portfolioId={id}
-                        onAssetCreated={(asset) => setAssets((prev) => [...prev, asset])}
-                    />
-                )}
 
                 {loading ? (
                     <p style={styles.loadingText}>Loading assets…</p>
                 ) : (
-                    <div style={styles.tableWrapper}>
-                        <table style={styles.table}>
-                            <thead>
-                                <tr>
-                                    <th style={styles.th}>Symbol</th>
-                                    <th style={styles.th}>Type</th>
-                                    <th style={styles.thRight}>Quantity</th>
-                                    <th style={styles.thRight}>Buy Price</th>
-                                    <th style={styles.thRight}>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {assets.length === 0 ? (
+                    <>
+                        <SummaryCard assets={assets} />
+
+                        <div style={styles.tabBar}>
+                            {TABS.map((tab) => {
+                                const isActive = activeTab === tab.key;
+                                return (
+                                    <button
+                                        key={tab.key}
+                                        style={{ ...styles.tab, ...(isActive ? styles.tabActive : {}) }}
+                                        onClick={() => setActiveTab(tab.key)}
+                                        onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.color = 'rgba(255,255,255,0.65)'; }}
+                                        onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; }}
+                                    >
+                                        {tab.label}
+                                        <span style={{ ...styles.tabBadge, ...(isActive ? styles.tabBadgeActive : {}) }}>
+                                            {counts[tab.key]}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div style={styles.tableWrapper}>
+                            {activeFilter && (
+                                <TabSummaryStrip assets={assets} filter={activeFilter} />
+                            )}
+                            <table style={styles.table}>
+                                <thead>
                                     <tr>
-                                        <td colSpan={5} style={styles.emptyRow}>No assets yet. Add one above.</td>
+                                        <th style={styles.th}>Symbol</th>
+                                        <th style={styles.th}>Type</th>
+                                        <th style={styles.thRight}>Quantity</th>
+                                        <th style={styles.thRight}>Buy Price</th>
+                                        <th style={styles.thRight}>Current Price</th>
+                                        <th style={styles.thRight}>P&amp;L</th>
+                                        <th style={styles.thRight}>Return</th>
+                                        <th style={styles.thRight}>Actions</th>
                                     </tr>
-                                ) : (
-                                    assets.map((asset) => (
-                                        <AssetRow key={asset.id} asset={asset} onDelete={handleDelete} />
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {visibleAssets.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={8} style={styles.emptyRow}>
+                                                {assets.length === 0
+                                                    ? 'No assets yet. Add one with the button above.'
+                                                    : `No ${activeTab.toLowerCase()} assets in this portfolio.`}
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        visibleAssets.map((asset) => (
+                                            <AssetRow key={asset.id} asset={asset} onDelete={handleDelete} />
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
                 )}
             </main>
         </div>

@@ -77,7 +77,7 @@ const styles = {
         opacity: 0.6,
         cursor: 'not-allowed',
     },
-    error: {
+    errorBox: {
         background: 'rgba(239, 68, 68, 0.12)',
         border: '1px solid rgba(239, 68, 68, 0.3)',
         borderRadius: '8px',
@@ -85,7 +85,7 @@ const styles = {
         fontSize: '13px',
         padding: '10px 14px',
         marginBottom: '18px',
-        lineHeight: '1.5',
+        lineHeight: '1.6',
     },
     toggle: {
         marginTop: '24px',
@@ -110,7 +110,29 @@ const styles = {
         background: 'rgba(255,255,255,0.07)',
         margin: '28px 0',
     },
+    requirements: {
+        marginTop: '8px',
+        padding: '10px 12px',
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '8px',
+    },
+    requirementItem: {
+        fontSize: '12px',
+        padding: '2px 0',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+    },
 };
+
+const PASSWORD_RULES = [
+    { label: 'At least 8 characters',                    test: (p) => p.length >= 8 },
+    { label: 'At least one uppercase letter',             test: (p) => /[A-Z]/.test(p) },
+    { label: 'At least one lowercase letter',             test: (p) => /[a-z]/.test(p) },
+    { label: 'At least one digit',                        test: (p) => /\d/.test(p) },
+    { label: 'At least one special character (@$!%*?&)',  test: (p) => /[@$!%*?&]/.test(p) },
+];
 
 function InputField({ label, id, type = 'text', value, onChange, placeholder, autoComplete }) {
     const [focused, setFocused] = useState(false);
@@ -135,17 +157,53 @@ function InputField({ label, id, type = 'text', value, onChange, placeholder, au
     );
 }
 
+function PasswordField({ value, onChange }) {
+    const [focused, setFocused] = useState(false);
+    return (
+        <div style={styles.group}>
+            <label htmlFor="password" style={styles.label}>Password</label>
+            <input
+                id="password"
+                type="password"
+                value={value}
+                onChange={onChange}
+                placeholder="Enter your password"
+                autoComplete="new-password"
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                style={{
+                    ...styles.input,
+                    ...(focused ? styles.inputFocus : {}),
+                }}
+            />
+            {focused && (
+                <div style={styles.requirements}>
+                    {PASSWORD_RULES.map((rule, i) => {
+                        const passed = rule.test(value);
+                        return (
+                            <div key={i} style={{ ...styles.requirementItem, color: passed ? '#68d391' : 'rgba(255,255,255,0.45)' }}>
+                                <span>{passed ? '✓' : '○'}</span>
+                                <span>{rule.label}</span>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+}
+
 export default function LoginPage() {
     const [isRegister, setIsRegister] = useState(false);
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [errors, setErrors] = useState([]);
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
+        setErrors([]);
         setLoading(true);
 
         try {
@@ -159,8 +217,13 @@ export default function LoginPage() {
             }
             window.location.href = '/dashboard';
         } catch (err) {
-            const msg = err?.response?.data?.message || err?.response?.data || err?.message;
-            setError(typeof msg === 'string' ? msg : 'Something went wrong. Please try again.');
+            const data = err?.response?.data;
+            if (data?.errors && Array.isArray(data.errors)) {
+                setErrors(data.errors);
+            } else {
+                const msg = data?.errorCause || data?.message || err?.message || 'Something went wrong. Please try again.';
+                setErrors([typeof msg === 'string' ? msg : 'Something went wrong. Please try again.']);
+            }
         } finally {
             setLoading(false);
         }
@@ -168,7 +231,7 @@ export default function LoginPage() {
 
     const switchMode = () => {
         setIsRegister((prev) => !prev);
-        setError('');
+        setErrors([]);
     };
 
     return (
@@ -179,7 +242,13 @@ export default function LoginPage() {
                     {isRegister ? 'Start tracking your portfolio today.' : 'Sign in to your portfolio tracker.'}
                 </p>
 
-                {error && <div style={styles.error}>{error}</div>}
+                {errors.length > 0 && (
+                    <div style={styles.errorBox}>
+                        {errors.map((msg, i) => (
+                            <div key={i}>{msg}</div>
+                        ))}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} noValidate>
                     <InputField
@@ -203,15 +272,19 @@ export default function LoginPage() {
                         />
                     )}
 
-                    <InputField
-                        label="Password"
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter your password"
-                        autoComplete={isRegister ? 'new-password' : 'current-password'}
-                    />
+                    {isRegister ? (
+                        <PasswordField value={password} onChange={(e) => setPassword(e.target.value)} />
+                    ) : (
+                        <InputField
+                            label="Password"
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Enter your password"
+                            autoComplete="current-password"
+                        />
+                    )}
 
                     <button
                         type="submit"
