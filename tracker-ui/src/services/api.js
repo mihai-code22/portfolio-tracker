@@ -45,6 +45,10 @@ export const getAssetsByPortfolioId = (portfolioId) =>
 export const getAssetsPnl = (portfolioId) =>
     api.get(`/assets/portfolio/${portfolioId}/pnl`);
 
+// Prices
+export const getPriceHistory = (symbol) =>
+    api.get(`/prices/${symbol}/history`);
+
 export const createAsset = (portfolioId, payload) =>
     api.post(`/assets/portfolio/${portfolioId}`, payload);
 

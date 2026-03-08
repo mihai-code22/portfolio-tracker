@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getPortfolioById, getAssetsPnl, deleteAsset } from '../services/api';
+import { getPortfolioById, getAssetsPnl, deleteAsset, getPriceHistory } from '../services/api';
 import { usePnlWebSocket } from '../hooks/usePnlWebSocket';
+import {
+    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from 'recharts';
 
 const styles = {
     page: {
@@ -260,6 +263,74 @@ const styles = {
         textAlign: 'center',
         padding: '48px 0',
     },
+    // ── Modal ───────────────────────────────────────────────
+    overlay: {
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.65)',
+        backdropFilter: 'blur(4px)',
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+    },
+    modal: {
+        background: '#12122a',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '16px',
+        width: '100%',
+        maxWidth: '700px',
+        padding: '28px',
+        position: 'relative',
+        boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
+    },
+    modalHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '24px',
+    },
+    modalTitle: {
+        fontSize: '18px',
+        fontWeight: '700',
+        letterSpacing: '-0.3px',
+    },
+    modalSubtitle: {
+        fontSize: '12px',
+        color: 'rgba(255,255,255,0.35)',
+        fontWeight: '400',
+        marginTop: '2px',
+    },
+    closeBtn: {
+        background: 'rgba(255,255,255,0.06)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '8px',
+        color: 'rgba(255,255,255,0.65)',
+        width: '32px',
+        height: '32px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        fontSize: '18px',
+        lineHeight: 1,
+        flexShrink: 0,
+        transition: 'background 0.2s, color 0.2s',
+    },
+    modalCenter: {
+        minHeight: '220px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    modalEmpty: {
+        color: 'rgba(255,255,255,0.3)',
+        fontSize: '14px',
+    },
+    rowClickable: {
+        cursor: 'pointer',
+    },
 };
 
 const TYPE_COLORS = {
@@ -295,12 +366,108 @@ function fmtPct(n) { return `${n >= 0 ? '+' : ''}${Number(n).toFixed(2)}%`; }
 function fmtPnl(n) { return `${n >= 0 ? '+' : ''}${fmt$(n)}`; }
 function pnlColor(n) { return n >= 0 ? '#4ade80' : '#fc8181'; }
 
+// ── Price history modal ────────────────────────────────────────
+function PriceHistoryModal({ symbol, onClose }) {
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getPriceHistory(symbol)
+            .then((res) => setData(res.data))
+            .catch(() => setData([]))
+            .finally(() => setLoading(false));
+    }, [symbol]);
+
+    const fmtTime = (ts) => {
+        const d = new Date(ts);
+        return d.toLocaleTimeString('en-GB'); // HH:mm:ss
+    };
+
+    const chartData = data.map((p) => ({ time: fmtTime(p.timestamp), price: p.price }));
+
+    const minPrice = chartData.length ? Math.min(...chartData.map((d) => d.price)) : 0;
+    const maxPrice = chartData.length ? Math.max(...chartData.map((d) => d.price)) : 0;
+    const padding  = (maxPrice - minPrice) * 0.05 || 1;
+
+    return (
+        <div style={styles.overlay} onClick={onClose}>
+            <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+                <div style={styles.modalHeader}>
+                    <div>
+                        <div style={styles.modalTitle}>{symbol}</div>
+                        <div style={styles.modalSubtitle}>Price history — last hour</div>
+                    </div>
+                    <button
+                        style={styles.closeBtn}
+                        onClick={onClose}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = '#ffffff'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.65)'; }}
+                    >
+                        ×
+                    </button>
+                </div>
+
+                {loading ? (
+                    <div style={styles.modalCenter}>
+                        <div style={styles.modalEmpty}>Loading…</div>
+                    </div>
+                ) : chartData.length === 0 ? (
+                    <div style={styles.modalCenter}>
+                        <div style={styles.modalEmpty}>No price history available.</div>
+                    </div>
+                ) : (
+                    <ResponsiveContainer width="100%" height={260}>
+                        <LineChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                            <XAxis
+                                dataKey="time"
+                                tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }}
+                                tickLine={false}
+                                axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                                interval="preserveStartEnd"
+                            />
+                            <YAxis
+                                domain={[minPrice - padding, maxPrice + padding]}
+                                tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }}
+                                tickLine={false}
+                                axisLine={false}
+                                tickFormatter={(v) => `$${Number(v).toFixed(2)}`}
+                                width={70}
+                            />
+                            <Tooltip
+                                contentStyle={{
+                                    background: '#1a1a2e',
+                                    border: '1px solid rgba(255,255,255,0.12)',
+                                    borderRadius: '8px',
+                                    color: '#ffffff',
+                                    fontSize: '13px',
+                                }}
+                                formatter={(v) => [`$${Number(v).toFixed(2)}`, 'Price']}
+                                labelStyle={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey="price"
+                                stroke="#4a9eff"
+                                strokeWidth={2}
+                                dot={false}
+                                activeDot={{ r: 4, fill: '#4a9eff', stroke: '#12122a', strokeWidth: 2 }}
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                )}
+            </div>
+        </div>
+    );
+}
+
 // ── Asset table row ────────────────────────────────────────────
-function AssetRow({ asset, onDelete }) {
+function AssetRow({ asset, onDelete, onClick }) {
     const [deleting, setDeleting] = useState(false);
     const [rowHovered, setRowHovered] = useState(false);
 
-    const handleDelete = async () => {
+    const handleDelete = async (e) => {
+        e.stopPropagation();
         setDeleting(true);
         await onDelete(asset.id);
         setDeleting(false);
@@ -312,7 +479,12 @@ function AssetRow({ asset, onDelete }) {
         <tr
             onMouseEnter={() => setRowHovered(true)}
             onMouseLeave={() => setRowHovered(false)}
-            style={{ background: rowHovered ? 'rgba(255,255,255,0.03)' : 'transparent', transition: 'background 0.15s' }}
+            onClick={onClick}
+            style={{
+                background: rowHovered ? 'rgba(255,255,255,0.03)' : 'transparent',
+                transition: 'background 0.15s',
+                cursor: 'pointer',
+            }}
         >
             <td style={styles.td}><span style={styles.symbol}>{asset.symbol}</span></td>
             <td style={styles.td}><span style={typeBadgeStyle(asset.type)}>{asset.type}</span></td>
@@ -399,6 +571,7 @@ export default function PortfolioDetailPage() {
     const [portfolioName, setPortfolioName] = useState('');
     const [assets, setAssets] = useState([]);
     const [activeTab, setActiveTab] = useState('All');
+    const [selectedAsset, setSelectedAsset] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -442,6 +615,12 @@ export default function PortfolioDetailPage() {
 
     return (
         <div style={styles.page}>
+            {selectedAsset && (
+                <PriceHistoryModal
+                    symbol={selectedAsset.symbol}
+                    onClose={() => setSelectedAsset(null)}
+                />
+            )}
             <nav style={styles.navbar}>
                 <button
                     style={styles.backBtn}
@@ -523,7 +702,7 @@ export default function PortfolioDetailPage() {
                                         </tr>
                                     ) : (
                                         visibleAssets.map((asset) => (
-                                            <AssetRow key={asset.id} asset={asset} onDelete={handleDelete} />
+                                            <AssetRow key={asset.id} asset={asset} onDelete={handleDelete} onClick={() => setSelectedAsset(asset)} />
                                         ))
                                     )}
                                 </tbody>

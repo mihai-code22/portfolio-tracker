@@ -47,6 +47,9 @@ kafka:
     group-id: tracker-service
   bootstrap-servers: localhost:9092
 
+price-service:
+  url: http://localhost:8081
+
 logging:
   level:
     com.portfolio.tracker: DEBUG
