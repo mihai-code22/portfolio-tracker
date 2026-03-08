@@ -1,5 +1,6 @@
 package com.portfolio.tracker.controller;
 
+import com.portfolio.tracker.dto.asset.pnl.AssetPnlDTO;
 import com.portfolio.tracker.dto.asset.request.AssetRequestDTO;
 import com.portfolio.tracker.dto.asset.response.AssetResponseDTO;
 import com.portfolio.tracker.service.asset.AssetService;
@@ -38,6 +39,11 @@ public class AssetController {
     public ResponseEntity<List<AssetResponseDTO>> getByPortfolioId(@PathVariable Long portfolioId) {
         List<AssetResponseDTO> assets = assetService.findByPortfolioId(portfolioId);
         return ResponseEntity.ok(assets);
+    }
+
+    @GetMapping("/portfolio/{portfolioId}/pnl")
+    public ResponseEntity<List<AssetPnlDTO>> getAssetsWithPnl(@PathVariable Long portfolioId) {
+        return ResponseEntity.ok(assetService.findByPortfolioIdWithPnl(portfolioId));
     }
 
     @DeleteMapping("/{id}")

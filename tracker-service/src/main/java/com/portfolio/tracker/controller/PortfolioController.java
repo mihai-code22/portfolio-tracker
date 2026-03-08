@@ -2,6 +2,7 @@ package com.portfolio.tracker.controller;
 
 import com.portfolio.tracker.dto.portfolio.PortfolioRequestDTO;
 import com.portfolio.tracker.dto.portfolio.PortfolioResponseDTO;
+import com.portfolio.tracker.dto.portfolio.pnl.PortfolioPnlDTO;
 import com.portfolio.tracker.service.portfolio.PortfolioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,6 +55,12 @@ public class PortfolioController {
     public ResponseEntity<List<PortfolioResponseDTO>> getMyPortfolios(
             @AuthenticationPrincipal String username) {
         return ResponseEntity.ok(portfolioService.findByUsername(username));
+    }
+
+    @GetMapping("/me/pnl")
+    public ResponseEntity<List<PortfolioPnlDTO>> getMyPortfoliosPnl(
+            @AuthenticationPrincipal String username) {
+        return ResponseEntity.ok(portfolioService.findByUsernameWithPnl(username));
     }
 
     @DeleteMapping("/{id}")

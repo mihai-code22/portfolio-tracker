@@ -77,4 +77,5 @@ public class AssetMapper {
             default -> throw new IllegalArgumentException("Unknown asset type: " + asset.getClass().getSimpleName());
         };
     }
+
 }

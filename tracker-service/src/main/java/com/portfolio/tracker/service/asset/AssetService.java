@@ -1,5 +1,6 @@
 package com.portfolio.tracker.service.asset;
 
+import com.portfolio.tracker.dto.asset.pnl.AssetPnlDTO;
 import com.portfolio.tracker.dto.asset.request.AssetRequestDTO;
 import com.portfolio.tracker.dto.asset.response.AssetResponseDTO;
 
@@ -14,4 +15,6 @@ public interface AssetService {
     List<AssetResponseDTO> findByPortfolioId(Long portfolioId);
 
     void delete(Long id);
+
+    List<AssetPnlDTO> findByPortfolioIdWithPnl(Long portfolioId);
 }

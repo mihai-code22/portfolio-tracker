@@ -20,4 +20,5 @@ public class PortfolioMapper {
                 portfolio.getUser().getId()
         );
     }
+
 }

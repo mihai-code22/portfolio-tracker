@@ -1,6 +1,7 @@
 package com.portfolio.tracker.service.asset;
 
 import com.portfolio.tracker.dto.asset.AssetMapper;
+import com.portfolio.tracker.dto.asset.pnl.AssetPnlDTO;
 import com.portfolio.tracker.dto.asset.request.AssetRequestDTO;
 import com.portfolio.tracker.dto.asset.response.AssetResponseDTO;
 import com.portfolio.tracker.entity.postgres.Asset;
@@ -8,6 +9,8 @@ import com.portfolio.tracker.entity.postgres.Portfolio;
 import com.portfolio.tracker.exception.ResourceNotFoundException;
 import com.portfolio.tracker.repository.postgres.AssetRepository;
 import com.portfolio.tracker.repository.postgres.PortfolioRepository;
+import com.portfolio.tracker.service.pnl.PnlCalculator;
+import com.portfolio.tracker.service.price.PriceService;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,11 +24,16 @@ public class AssetServiceImpl implements AssetService {
     private final AssetRepository assetRepository;
     private final PortfolioRepository portfolioRepository;
     private final AssetMapper assetMapper;
+    private final PriceService priceService;
+    private final PnlCalculator pnlCalculator;
 
-    public AssetServiceImpl(AssetRepository assetRepository, PortfolioRepository portfolioRepository, AssetMapper assetMapper) {
+    public AssetServiceImpl(AssetRepository assetRepository, PortfolioRepository portfolioRepository,
+                            AssetMapper assetMapper, PriceService priceService, PnlCalculator pnlCalculator) {
         this.assetRepository = assetRepository;
         this.portfolioRepository = portfolioRepository;
         this.assetMapper = assetMapper;
+        this.priceService = priceService;
+        this.pnlCalculator = pnlCalculator;
     }
 
     @Override
@@ -65,5 +73,15 @@ public class AssetServiceImpl implements AssetService {
 
         assetRepository.delete(asset);
         log.info("Deleted asset with id {}", id);
+    }
+
+    @Override
+    public List<AssetPnlDTO> findByPortfolioIdWithPnl(Long portfolioId) {
+        portfolioRepository.findById(portfolioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found"));
+
+        return assetRepository.findByPortfolioId(portfolioId).stream()
+                .map(asset -> pnlCalculator.forAsset(asset, priceService.getCurrentPrice(asset.getSymbol())))
+                .toList();
     }
 }
