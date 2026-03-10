@@ -36,6 +36,4 @@ public abstract class Asset {
 
     @Column(name = "portfolio_id")
     private Long portfolioId;
-
-    public abstract AssetType getAssetType();
 }

@@ -31,9 +31,4 @@ public class Bond extends Asset {
 
     @Column(name = "maturity_date", updatable = false)
     private LocalDate  maturityDate;
-
-    @Override
-    public AssetType getAssetType() {
-        return AssetType.BOND;
-    }
 }

@@ -5,9 +5,11 @@ import com.portfolio.tracker.dto.asset.pnl.AssetPnlDTO;
 import com.portfolio.tracker.dto.portfolio.pnl.PortfolioPnlDTO;
 import com.portfolio.tracker.entity.postgres.Asset;
 import com.portfolio.tracker.entity.postgres.Portfolio;
+import com.portfolio.tracker.entity.postgres.assets.Bond;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Component
@@ -26,6 +28,16 @@ public class PnlCalculator {
         }
 
         return assetMapper.toPnlDto(asset, currentPrice, pnl, pnlPercentage);
+    }
+
+    public AssetPnlDTO forBond(Asset asset) {
+        Bond bond = (Bond) asset;
+        if (bond.getMaturityDate().isBefore(LocalDate.now())) {
+            Float pnl = bond.getBuyPrice() * bond.getCouponRate() * bond.getQuantity();
+            Float pnlPercentage = bond.getCouponRate() * 100;
+            return assetMapper.toPnlDto(asset, null, pnl, pnlPercentage);
+        }
+        return assetMapper.toPnlDto(asset, null, null, null);
     }
 
     public PortfolioPnlDTO forPortfolio(Portfolio portfolio, List<AssetPnlDTO> assetPnls) {

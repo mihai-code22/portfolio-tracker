@@ -22,9 +22,4 @@ public class Stock extends Asset {
 
     @Enumerated(value = EnumType.STRING)
     private Sector sector;
-
-    @Override
-    public AssetType getAssetType() {
-        return AssetType.STOCK;
-    }
 }

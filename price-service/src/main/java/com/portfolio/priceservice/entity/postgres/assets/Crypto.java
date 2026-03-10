@@ -19,9 +19,4 @@ public class Crypto extends Asset {
 
     @NotBlank
     private String blockchain;
-
-    @Override
-    public AssetType getAssetType() {
-        return AssetType.CRYPTO;
-    }
 }

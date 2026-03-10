@@ -1,6 +1,5 @@
-package com.portfolio.priceservice.service.price;
+package com.portfolio.priceservice.service.price.provider;
 
-import com.portfolio.common.enums.AssetType;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -14,21 +13,13 @@ public class SimulatedPriceProvider implements PriceProvider {
     private final Map<String, Float> currentPrices = new ConcurrentHashMap<>();
 
     @Override
-    public Float getPrice(String symbol, AssetType assetType) {
+    public Float getPrice(String symbol) {
         return currentPrices.compute(symbol, (key, existingPrice) -> {
             if (existingPrice == null) {
-                return generateInitialPrice(assetType);
+                return 50f + random.nextFloat() * 450f;
             }
             return applyVariation(existingPrice);
         });
-    }
-
-    private Float generateInitialPrice(AssetType assetType) {
-        return switch (assetType) {
-            case STOCK -> 50f + random.nextFloat() * 450f;   // $50 - $500
-            case CRYPTO -> 100f + random.nextFloat() * 9900f; // $100 - $10000
-            case BOND -> 95f + random.nextFloat() * 10f;      // $95 - $105
-        };
     }
 
     private Float applyVariation(Float price) {

@@ -1,5 +1,6 @@
 package com.portfolio.tracker.service.asset;
 
+import com.portfolio.common.enums.AssetType;
 import com.portfolio.tracker.dto.asset.AssetMapper;
 import com.portfolio.tracker.dto.asset.pnl.AssetPnlDTO;
 import com.portfolio.tracker.dto.asset.request.AssetRequestDTO;
@@ -81,7 +82,9 @@ public class AssetServiceImpl implements AssetService {
                 .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found"));
 
         return assetRepository.findByPortfolioId(portfolioId).stream()
-                .map(asset -> pnlCalculator.forAsset(asset, priceCache.getCurrentPrice(asset.getSymbol())))
+                .map(asset -> asset.getAssetType() == AssetType.BOND
+                        ? pnlCalculator.forBond(asset)
+                        : pnlCalculator.forAsset(asset, priceCache.getCurrentPrice(asset.getSymbol())))
                 .toList();
     }
 }

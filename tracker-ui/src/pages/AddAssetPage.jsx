@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { createAsset } from '../services/api';
+import { createAsset, getSupportedSymbols } from '../services/api';
 
 const SECTORS = [
     'HEALTHCARE', 'FINANCE', 'ENERGY', 'CONSUMER_GOODS',
@@ -212,7 +212,7 @@ const styles = {
     },
 };
 
-function Dropdown({ value, onChange, options, placeholder = 'Select…' }) {
+function Dropdown({ value, onChange, options, placeholder = 'Select…', loading = false }) {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
 
@@ -225,16 +225,20 @@ function Dropdown({ value, onChange, options, placeholder = 'Select…' }) {
         return () => document.removeEventListener('mousedown', handler);
     }, [open]);
 
-    const selected = options.find((o) => o.value === value);
+    const selected = !loading && options.find((o) => o.value === value);
 
     return (
         <div ref={ref} style={styles.ddWrapper}>
             <div
-                style={{ ...styles.ddTrigger, ...(open ? styles.ddTriggerOpen : {}) }}
-                onClick={() => setOpen((p) => !p)}
+                style={{
+                    ...styles.ddTrigger,
+                    ...(open ? styles.ddTriggerOpen : {}),
+                    ...(loading ? { opacity: 0.55, cursor: 'not-allowed' } : {}),
+                }}
+                onClick={() => { if (!loading) setOpen((p) => !p); }}
             >
-                <span style={{ color: selected ? '#ffffff' : 'rgba(255,255,255,0.3)' }}>
-                    {selected ? selected.label : placeholder}
+                <span style={{ color: (selected && !loading) ? '#ffffff' : 'rgba(255,255,255,0.3)' }}>
+                    {loading ? 'Loading symbols…' : selected ? selected.label : placeholder}
                 </span>
                 <span style={{ ...styles.ddChevron, transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                     ▼
@@ -296,12 +300,30 @@ export default function AddAssetPage() {
     const [form, setForm] = useState(EMPTY_FORM);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [symbols, setSymbols] = useState([]);
+    const [symbolsLoading, setSymbolsLoading] = useState(false);
+
+    useEffect(() => {
+        setSymbolsLoading(true);
+        setSymbols([]);
+        getSupportedSymbols(form.type)
+            .then((res) => {
+                const opts = (res.data ?? []).map((s) => ({
+                    value: typeof s === 'string' ? s : s.symbol,
+                    label: typeof s === 'string' ? s : s.symbol,
+                }));
+                setSymbols(opts);
+            })
+            .catch(() => setSymbols([]))
+            .finally(() => setSymbolsLoading(false));
+    }, [form.type]);
 
     const setInput = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
     const setField = (field) => (value) => setForm((prev) => ({ ...prev, [field]: value }));
     const setType  = (value) => setForm((prev) => ({
         ...prev,
         type: value,
+        symbol: '',
         ...Object.fromEntries(TYPE_SPECIFIC_FIELDS.map((f) => [f, ''])),
     }));
 
@@ -360,7 +382,13 @@ export default function AddAssetPage() {
                         {/* Base fields */}
                         <div style={styles.formGrid}>
                             <FormField label="Symbol">
-                                <FormInput value={form.symbol} onChange={setInput('symbol')} placeholder="e.g. AAPL" />
+                                <Dropdown
+                                    value={form.symbol}
+                                    onChange={setField('symbol')}
+                                    options={symbols}
+                                    placeholder="Select symbol…"
+                                    loading={symbolsLoading}
+                                />
                             </FormField>
                             <FormField label="Type">
                                 <Dropdown value={form.type} onChange={setType} options={TYPE_OPTIONS} />

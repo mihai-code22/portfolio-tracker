@@ -49,6 +49,10 @@ export const getAssetsPnl = (portfolioId) =>
 export const getPriceHistory = (symbol) =>
     api.get(`/prices/${symbol}/history`);
 
+// Symbols
+export const getSupportedSymbols = (type) =>
+    api.get('/symbols', { params: { type } });
+
 export const createAsset = (portfolioId, payload) =>
     api.post(`/assets/portfolio/${portfolioId}`, payload);
 
